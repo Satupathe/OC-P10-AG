@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django.contrib import auth
 from rest_framework.validators import UniqueValidator
 from rest_framework.exceptions import AuthenticationFailed
-from .models import Users
+from .models import Users, Projects, Contributors, Issues, Comments 
 
 
 
@@ -44,41 +44,15 @@ class RegisterSerializer(serializers.ModelSerializer):
         return user
 
 
-class LoginSerializer(serializers.ModelSerializer):
-    email = serializers.EmailField(max_length=255, min_length=3)
-    password = serializers.CharField(
-        max_length=68, min_length=6, write_only=True)
-    tokens = serializers.SerializerMethodField()
-
-    def get_tokens(self, obj):
-        user = Users.objects.get(email=obj['email'])
-
-        return {
-            'refresh': user.tokens()['refresh'],
-            'access': user.tokens()['access']
-        }
+class ContributorsSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = Users
-        fields = ['email', 'password', 'username', 'tokens']
+        model = Contributors
+        fields = ['user_id', 'permission']
 
-    def validate(self, attrs):
-        email = attrs.get('email', '')
-        password = attrs.get('password', '')
-        filtered_user_by_email = Users.objects.filter(email=email)
-        user = auth.authenticate(email=email, password=password)
 
-        if filtered_user_by_email.exists() and filtered_user_by_email[0].auth_provider != 'email':
-            raise AuthenticationFailed(
-                detail='Please continue your login using ' + filtered_user_by_email[0].auth_provider)
-
-        if not user:
-            raise AuthenticationFailed('Invalid credentials, try again')
-
-        return {
-            'email': user.email,
-            'username': user.username,
-            'tokens': user.tokens()
-        }
-
-        return super().validate(attrs)
+class ProjectsDetailsSerializer(serializers.ModelSerializer):
+    contributors = ContributorsSerializer(many=True)
+    class Meta:
+        model = Projects
+        fields = ['title', 'id', 'author_user_id', 'type', 'description', 'contributors']

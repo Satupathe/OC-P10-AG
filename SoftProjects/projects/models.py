@@ -1,20 +1,19 @@
 from django.conf import settings
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+from django.contrib.auth.models import AbstractBaseUser, UserManager, PermissionsMixin
 
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
-class Users(AbstractBaseUser, PermissionsMixin, BaseUserManager):
-    username = None
+class Users(AbstractBaseUser, PermissionsMixin): #BaseUserManager
     first_name = models.CharField(max_length=255, unique=True, db_index=True)
     last_name = models.CharField(max_length=255, unique=True, db_index=True)
     email = models.EmailField(max_length=255, unique=True, db_index=True)
 
+    objects = UserManager()
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
-
 
     def __str__(self):
         return self.email
@@ -40,12 +39,16 @@ class Users(AbstractBaseUser, PermissionsMixin, BaseUserManager):
         }
 
 
+
 class Projects(models.Model):
     title = models.CharField(max_length=255)
     description = models.CharField(max_length=2048)
     type = models.CharField(max_length=255)
     author_user_id = models.ForeignKey(settings.AUTH_USER_MODEL, related_name = 'project_author', default='', on_delete=models.CASCADE)
+    created_time = models.DateTimeField(auto_now_add=True)
     
+    def __str__(self):
+        return self.title
 
 class Contributors(models.Model):
     

@@ -134,9 +134,12 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 4,
     'DEFAULT_AUTHENTICATION_CLASSES': ('rest_framework_simplejwt.authentication.JWTAuthentication',),
     'NON_FIELD_ERRORS_KEY': 'error',
+    'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.IsAuthenticated']
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': datetime.timedelta(minutes=1),
+    'ACCESS_TOKEN_LIFETIME': datetime.timedelta(minutes=30),
     'REFRESH_TOKEN_LIFETIME': datetime.timedelta(days=1),
+    
+    'AUTH_HEADER_TYPES': ('Bearer',),
 }
