@@ -1,11 +1,12 @@
+from django.http.request import QueryDict
 from rest_framework import status, generics, permissions, filters, mixins, viewsets
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import OR, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.viewsets import ReadOnlyModelViewSet, ModelViewSet
-from .serializers import RegisterSerializer, ProjectsDetailsSerializer
+from .serializers import RegisterSerializer, ProjectsDetailsSerializer, ContributorsSerializer
 from .models import Users, Projects, Contributors, Issues, Comments 
-from .permissions import IsOwner
+from .permissions import IsAuthor
 
 
 """class MultiSerializerViewSetMixin(object):
@@ -49,10 +50,8 @@ class UserCreate(generics.GenericAPIView):
 
 
 class ProjectsViewset(ModelViewSet):
-    queryset = Projects.objects.all()
     serializer_class = ProjectsDetailsSerializer
-    detail_serializer_class = ProjectsDetailsSerializer
-    permission_classes = [IsAuthenticated] #is author, contributor
+    permission_classes = [IsAuthor]
     
     @action(methods=['get'], detail=True)
     def get_queryset(self):
@@ -61,6 +60,7 @@ class ProjectsViewset(ModelViewSet):
     def create(self, request, *args, **kwargs):
         request.POST._mutable = True
         request.data["author_user_id"] = request.user.pk
+        # request.data[] ?????????????????????????
         request.POST._mutable = False
         return super(ProjectsViewset, self).create(request, *args, *kwargs) # vérifier l'utilisation des étoiles
 
@@ -75,3 +75,32 @@ class ProjectsViewset(ModelViewSet):
         print('essai')
         print(request.user.pk)
         return super(ProjectsViewset, self).delete()
+
+
+class ContributorsViewset(ModelViewSet):
+    serializer_class = ContributorsSerializer
+    permission_classes = [IsAuthenticated]
+
+    @action(methods=['get'], detail=True)
+    def get_queryset(self):
+        return Contributors.objects.filter(project_id=self.kwargs.get('projects_pk'))
+
+    def create(self, request, *args, **kwargs):
+        request.POST._mutable = True
+        request.data["project_id"] = kwargs['projects_pk']
+        request.POST._mutable = False
+        return super(ContributorsViewset, self).create(request, *args, *kwargs) # vérifier l'utilisation des étoiles
+
+    @action(methods=['put'], detail=True)
+    def modify(self, request, pk=None, *args, **kwargs):
+        print('essai')
+        print(request.user.pk)
+        return super(ContributorsViewset, self).update(request, **args, **kwargs)
+
+    @action(methods=['delete'], detail=True)
+    def delete(self, request, *args, **kwargs):
+        print('essai')
+        print(request.user.pk)
+        #récupérer le mail de l'utilisateur et supprimer le contributeur lié à l'utilisateur possédant le mail
+        #et lié au projet ciblé
+        return super(ContributorsViewset, self).delete()

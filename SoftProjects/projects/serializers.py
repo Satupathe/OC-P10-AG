@@ -1,8 +1,10 @@
 from rest_framework import serializers
 from django.contrib import auth
+from rest_framework.fields import SerializerMethodField
 from rest_framework.validators import UniqueValidator
 from rest_framework.exceptions import AuthenticationFailed
-from .models import Users, Projects, Contributors, Issues, Comments 
+from .models import Users, Projects, Contributors, Issues, Comments
+
 
 
 
@@ -45,14 +47,19 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 
 class ContributorsSerializer(serializers.ModelSerializer):
-
+    CHOICES =[
+    ("1", "Author"),
+    ("2", "Contributor"),
+    ]
+    permission = serializers.MultipleChoiceField(choices=CHOICES)
     class Meta:
         model = Contributors
-        fields = ['user_id', 'permission']
+        fields = ['id', 'permission', 'role', 'user_id', 'project_id']
 
 
 class ProjectsDetailsSerializer(serializers.ModelSerializer):
-    contributors = ContributorsSerializer(many=True)
+    contributors = ContributorsSerializer(source='contributor_project', required=False, allow_null=True, many=True)
+
     class Meta:
         model = Projects
         fields = ['title', 'id', 'author_user_id', 'type', 'description', 'contributors']
