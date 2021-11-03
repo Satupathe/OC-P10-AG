@@ -46,6 +46,11 @@ class RegisterSerializer(serializers.ModelSerializer):
         return user
 
 
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Users
+        fields = ['first_name', 'last_name']
+
 class ContributorsSerializer(serializers.ModelSerializer):
     CHOICES =[
     ("1", "Author"),
@@ -63,3 +68,17 @@ class ProjectsDetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Projects
         fields = ['title', 'id', 'author_user_id', 'type', 'description', 'contributors']
+
+
+class IssuesSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Issues
+        fields = ['title', 'project_id', 'author_user_id', 'tag', 'priority', 'status', 'assignee_user_id', 'description', 'created_time']
+
+
+class CommentsSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Comments
+        fields = ['description', 'issue_id', 'author_user_id', 'created_time']
