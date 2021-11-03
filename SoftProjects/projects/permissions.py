@@ -34,7 +34,22 @@ class IsContributor(BasePermission):
     my_safe_method = ['get', 'post'] # A vérifier
 
     def has_permission(self, request, view):
-        return super().has_permission(request, view)
+        if request.user.is_authenticated:
+            print('essai contributor')
+            return True
 
-        """try:
-            contributor = Contributors.objects.get(user=request.user)"""
+    def has_object_permission(self, request, view, obj):
+        print('vue')
+        if request.user.is_authenticated:
+            print('authenticated')
+            print('obj.author_user_id', obj.author_user_id)
+            print('request.user', request.user)
+            print(request.method)
+            if obj.author_user_id == request.user:
+                if request.method in self.author_methods:
+                    return True
+            else:
+                print("you're not this project's author")
+            return obj.author_user_id == request.user
+    
+    
