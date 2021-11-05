@@ -1,4 +1,5 @@
 from django.http.request import QueryDict
+from django.db.models import Q
 from rest_framework import status, generics, permissions, filters, mixins, viewsets
 from rest_framework.permissions import OR, IsAuthenticated
 from rest_framework.response import Response
@@ -6,7 +7,7 @@ from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.viewsets import ReadOnlyModelViewSet, ModelViewSet
 from .serializers import CommentsSerializer, RegisterSerializer, ProjectsDetailsSerializer, ContributorsSerializer, IssuesSerializer
 from .models import Users, Projects, Contributors, Issues, Comments 
-from .permissions import IsAuthor, IsContributor
+from .permissions import IsAuthenticatedProjectAuthor, IsCommentAuthor, IsIssueAuthorOrAssignee, IsProjectAuthorOrContributor
 
 
 class UserCreate(generics.GenericAPIView):
@@ -25,11 +26,12 @@ class UserCreate(generics.GenericAPIView):
 
 class ProjectsViewset(ModelViewSet):
     serializer_class = ProjectsDetailsSerializer
-    permission_classes = [IsAuthor]
+    permission_classes = [IsAuthenticatedProjectAuthor]
     
     @action(methods=['get'], detail=True)
     def get_queryset(self):
-        return Projects.objects.filter(author_user_id=self.request.user)
+        print('getqueryset user', self.request.user)
+        return Projects.objects.filter(Q(author_user_id=self.request.user) | Q(contributor_project__user_id=self.request.user))
         #Supprimer le lien direct entre projects et user et passer par contributor pour l'auteur
         #instaurer correctement le choix multiple des permissions dans Contributors
         #Définir les permissions de permissions.py
@@ -37,7 +39,6 @@ class ProjectsViewset(ModelViewSet):
     def create(self, request, *args, **kwargs):
         request.POST._mutable = True
         request.data["author_user_id"] = request.user.pk
-        # request.data[] ?????????????????????????
         request.POST._mutable = False
         return super(ProjectsViewset, self).create(request, *args, *kwargs) # vérifier l'utilisation des étoiles
 
@@ -55,11 +56,13 @@ class ProjectsViewset(ModelViewSet):
 
 class ContributorsViewset(ModelViewSet):
     serializer_class = ContributorsSerializer
-    permission_classes = [IsAuthor]
+    permission_classes = [IsProjectAuthorOrContributor]
 
     @action(methods=['get'], detail=True)
     def get_queryset(self):
-        print(self.kwargs)
+        #print(self.kwargs)
+        #print(self.request.user)
+        #print(Projects.objects.filter(author_user_id=self.request.user))
         return Contributors.objects.filter(project_id=self.kwargs.get('projects_pk'))
 
     def create(self, request, *args, **kwargs):
@@ -76,7 +79,7 @@ class ContributorsViewset(ModelViewSet):
 
 class IssuesViewset(ModelViewSet):
     serializer_class = IssuesSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsIssueAuthorOrAssignee]
 
     @action(methods=['get'], detail=True)
     def get_queryset(self):
@@ -104,7 +107,7 @@ class IssuesViewset(ModelViewSet):
 
 class CommentsViewset(ModelViewSet):
     serializer_class = CommentsSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsCommentAuthor]
 
     @action(methods=['get'], detail=True)
     def get_queryset(self):
