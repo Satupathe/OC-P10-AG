@@ -1,11 +1,6 @@
 from rest_framework import serializers
-from django.contrib import auth
-from rest_framework.fields import SerializerMethodField
 from rest_framework.validators import UniqueValidator
-from rest_framework.exceptions import AuthenticationFailed
 from .models import Users, Projects, Contributors, Issues, Comments
-
-
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -22,14 +17,14 @@ class RegisterSerializer(serializers.ModelSerializer):
         fields = ['first_name', 'last_name', 'email', 'password']
 
     def validate(self, attrs):
-        first_name=attrs.get('first_name', '')
-        last_name=attrs.get('last_name', '')
+        first_name = attrs.get('first_name', '')
+        last_name = attrs.get('last_name', '')
 
         if not first_name.isalnum():
-            raise serializers.ValidationError('the first name should only contain alphanumerics characters') 
-        
+            raise serializers.ValidationError('the first name should only contain alphanumerics characters')
+
         elif not last_name.isalnum():
-            raise serializers.ValidationError('the first name should only contain alphanumerics characters') 
+            raise serializers.ValidationError('the first name should only contain alphanumerics characters')
 
         return attrs
 
@@ -51,19 +46,24 @@ class UserSerializer(serializers.ModelSerializer):
         model = Users
         fields = ['first_name', 'last_name']
 
+
 class ContributorsSerializer(serializers.ModelSerializer):
-    CHOICES =[
-    ("1", "Author"),
-    ("2", "Contributor"),
-    ]
+    CHOICES = [("1", "Author"),
+               ("2", "Contributor"),
+               ]
     permission = serializers.MultipleChoiceField(choices=CHOICES)
+
     class Meta:
         model = Contributors
         fields = ['id', 'permission', 'role', 'user_id', 'project_id']
 
 
 class ProjectsDetailsSerializer(serializers.ModelSerializer):
-    contributors = ContributorsSerializer(source='contributor_project', required=False, allow_null=True, many=True)
+    contributors = ContributorsSerializer(source='contributor_project',
+                                          required=False,
+                                          allow_null=True,
+                                          many=True
+                                          )
 
     class Meta:
         model = Projects
@@ -74,7 +74,16 @@ class IssuesSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Issues
-        fields = ['title', 'project_id', 'author_user_id', 'tag', 'priority', 'status', 'assignee_user_id', 'description', 'created_time']
+        fields = ['title',
+                  'project_id',
+                  'author_user_id',
+                  'tag',
+                  'priority',
+                  'status',
+                  'assignee_user_id',
+                  'description',
+                  'created_time'
+                  ]
 
 
 class CommentsSerializer(serializers.ModelSerializer):
