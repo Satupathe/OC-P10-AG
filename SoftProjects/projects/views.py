@@ -49,7 +49,6 @@ class ProjectsViewset(ModelViewSet):
     def create(self, request, *args, **kwargs):
         request.POST._mutable = True
         request.data["author_user_id"] = request.user.pk
-        # request.data[] ?????????????????????????
         request.POST._mutable = False
         return super(ProjectsViewset, self).create(request, *args, *kwargs)
 
