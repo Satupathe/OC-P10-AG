@@ -32,6 +32,7 @@ class UserCreate(generics.GenericAPIView):
 
 
 class ProjectsViewset(ModelViewSet):
+
     """
     Only authenticated users can access this view
     Allow to get project list or only one project related to the authenticated user
@@ -48,6 +49,7 @@ class ProjectsViewset(ModelViewSet):
     def create(self, request, *args, **kwargs):
         request.POST._mutable = True
         request.data["author_user_id"] = request.user.pk
+        # request.data[] ?????????????????????????
         request.POST._mutable = False
         return super(ProjectsViewset, self).create(request, *args, *kwargs)
 
@@ -85,9 +87,10 @@ class ContributorsViewset(ModelViewSet):
 
     @action(methods=['delete'], detail=True)
     def delete(self, request):
+
         return super(ContributorsViewset, self).delete()
 
-
+      
 class IssuesViewset(ModelViewSet):
     """
     Only authenticated users and a project members can access this view
@@ -96,6 +99,7 @@ class IssuesViewset(ModelViewSet):
     """
     serializer_class = IssuesSerializer
     permission_classes = [IsIssueAuthorOrAssignee]
+
 
     @action(methods=['get'], detail=True)
     def get_queryset(self):
@@ -108,6 +112,7 @@ class IssuesViewset(ModelViewSet):
         request.data["assignee_user_id"] = Users.objects.get(id=request.data["assignee_user_id"]).pk
         request.POST._mutable = False
         return super(IssuesViewset, self).create(request, *args, *kwargs)
+
 
     @action(methods=['put'], detail=True)
     def modify(self, request, pk=None, *args, **kwargs):
@@ -143,6 +148,7 @@ class CommentsViewset(ModelViewSet):
 
     @action(methods=['put'], detail=True)
     def modify(self, request, pk=None, *args, **kwargs):
+
         return super(CommentsViewset, self).update(request, **args, **kwargs)
 
     @action(methods=['delete'], detail=True)

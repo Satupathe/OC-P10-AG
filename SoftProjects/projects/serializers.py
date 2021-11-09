@@ -53,12 +53,20 @@ class ContributorsSerializer(serializers.ModelSerializer):
                ]
     permission = serializers.MultipleChoiceField(choices=CHOICES)
 
+
+class ContributorsSerializer(serializers.ModelSerializer):
+    CHOICES =[
+    ("1", "Author"),
+    ("2", "Contributor"),
+    ]
+    permission = serializers.MultipleChoiceField(choices=CHOICES)
     class Meta:
         model = Contributors
         fields = ['id', 'permission', 'role', 'user_id', 'project_id']
 
 
 class ProjectsDetailsSerializer(serializers.ModelSerializer):
+
     contributors = ContributorsSerializer(source='contributor_project',
                                           required=False,
                                           allow_null=True,
