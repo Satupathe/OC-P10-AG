@@ -63,7 +63,7 @@ This step will install necessary modules to execute the code.
 Let it work because it can take few minutes depending on your internet connection
 
 ## LAUNCH THE SERVER:
-In your terminal type ```cd 'SoftDesk/OC-P10-AG/SoftProjects```
+In your terminal type ```cd SoftProjects```
 Then type "python manage.py runserver and after a few seconds you'll see the following messages:
 
 ```
