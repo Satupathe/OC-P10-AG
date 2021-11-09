@@ -5,7 +5,8 @@ from django.contrib.auth.models import AbstractBaseUser, UserManager, Permission
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
-class Users(AbstractBaseUser, PermissionsMixin): #BaseUserManager
+class Users(AbstractBaseUser, PermissionsMixin):
+    """Users custom model to create app user without specifying a username"""
     first_name = models.CharField(max_length=255, unique=True, db_index=True)
     last_name = models.CharField(max_length=255, unique=True, db_index=True)
     email = models.EmailField(max_length=255, unique=True, db_index=True)
@@ -39,44 +40,70 @@ class Users(AbstractBaseUser, PermissionsMixin): #BaseUserManager
         }
 
 
-
 class Projects(models.Model):
+    """Project model used as a base to add contributors and add issues and comments"""
     title = models.CharField(max_length=255)
     description = models.CharField(max_length=2048)
     type = models.CharField(max_length=255)
-    author_user_id = models.ForeignKey(settings.AUTH_USER_MODEL, related_name = 'project_author', default='', on_delete=models.CASCADE)
+    author_user_id = models.ForeignKey(settings.AUTH_USER_MODEL,
+                                       related_name='project_author',
+                                       default='',
+                                       on_delete=models.CASCADE
+                                       )
     created_time = models.DateTimeField(auto_now_add=True)
-    
+
     def __str__(self):
         return self.title
 
+
 class Contributors(models.Model):
-    
-    CHOICES =[
-    ("1", "Author"),
-    ("2", "Contributor"),
-    ]
-  
-    user_id = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='users',default='', on_delete=models.CASCADE)
-    project_id = models.ForeignKey(Projects, related_name='contributor_project', default='', on_delete=models.CASCADE)
+    """Link between users and projects, specify user authorization(permission)"""
+    CHOICES = [("1", "Author"),
+               ("2", "Contributor"),
+               ]
+
+    user_id = models.ForeignKey(settings.AUTH_USER_MODEL,
+                                related_name='users',
+                                default='',
+                                on_delete=models.CASCADE
+                                )
+    project_id = models.ForeignKey(Projects,
+                                   related_name='contributor_project',
+                                   default='',
+                                   on_delete=models.CASCADE
+                                   )
     permission = models.CharField(choices=CHOICES, max_length=2)
     role = models.CharField(max_length=255)
 
 
 class Issues(models.Model):
+    """Linked to a specific Projects model to save project related problems"""
     title = models.CharField(max_length=255)
     description = models.CharField(max_length=2048)
     tag = models.CharField(max_length=50)
     priority = models.CharField(max_length=50)
     project_id = models.ForeignKey(Projects, default='', on_delete=models.CASCADE)
     status = models.CharField(max_length=50)
-    author_user_id = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='author', default='', on_delete=models.DO_NOTHING)
-    assignee_user_id = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='assignee', default='', on_delete=models.DO_NOTHING)
+    author_user_id = models.ForeignKey(settings.AUTH_USER_MODEL,
+                                       related_name='author',
+                                       default='',
+                                       on_delete=models.DO_NOTHING
+                                       )
+    assignee_user_id = models.ForeignKey(settings.AUTH_USER_MODEL,
+                                         related_name='assignee',
+                                         default='',
+                                         on_delete=models.DO_NOTHING
+                                         )
     created_time = models.DateTimeField(auto_now_add=True)
 
 
 class Comments(models.Model):
+    """Linked to a specific Issues model, save comments of an issue"""
     description = models.CharField(max_length=2048)
-    author_user_id = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='comment_author', default='' ,on_delete=models.DO_NOTHING)
+    author_user_id = models.ForeignKey(settings.AUTH_USER_MODEL,
+                                       related_name='comment_author',
+                                       default='',
+                                       on_delete=models.DO_NOTHING
+                                       )
     issue_id = models.ForeignKey(Issues, default='', on_delete=models.CASCADE)
     created_time = models.DateTimeField(auto_now_add=True)
